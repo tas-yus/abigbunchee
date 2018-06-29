@@ -1,0 +1,81 @@
+<div class="d-flex justify-content-between">
+  <h4>Days (กำหนดวันสำคัญ) ปี {{year}}</h4>
+  <div class="form-group">
+    <select (change)="requestDates()" class="form-control" [(ngModel)]="year">
+      <option *ngFor="let number of [0,1,2,3,4]" value="{{getYear(number)}}">{{getYear(number)}}</option>
+    </select>
+  </div>
+</div>
+<div class="my-4 card">
+  <div class="card-header d-flex justify-content-between">
+    <h6 class="font-weight-bold my-0">นักขัตฤกษ์</h6>
+    <i class="cursor fa fa-plus text-primary" (click)="addHoliday = !addHoliday"></i>
+  </div>
+  <div class="card-body">
+    <li *ngFor="let holiday of holidays">
+      {{holiday.date}} {{monthAbbrevs[holiday.month]}} - {{holiday.title}}
+      <sup>
+        <i (click)="onDeleteHoliday(holiday._id)" class="fa fa-times text-danger cursor"></i>
+      </sup>
+    </li>
+    <div *ngIf="holidays.length == 0">ไม่มีวันหยุดนักขัตฤกษ์</div>
+  </div>
+  <div class="card-body" *ngIf="addHoliday">
+    <hr>
+    <p>เพิ่มวันนักขัต</p>
+    <form #f="ngForm">
+      <div class="form-group">
+        <input type="text" name="title" class="form-control"
+        #title="ngModel" ngModel autocomplete="off" placeholder="ชื่อวัน" required>
+      </div>
+      <div class="form-group">
+        <my-date-picker [placeholder]="placeholder" [options]="myDatePickerOptions"
+          (dateChanged)="onDateChanged($event)" required>
+        </my-date-picker>
+      </div>
+      <div class="form-group text-right">
+        <button [disabled]="!f.form.valid || !date" (click)="onAddDate(f)" class="btn btn-primary">เพิ่ม</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="my-4 card">
+  <div class="card-header d-flex justify-content-between">
+    <h6 class="font-weight-bold my-0">ปิดเทอม</h6>
+    <i class="cursor fa fa-plus text-primary" (click)="addBreak = !addBreak"></i>
+  </div>
+  <div class="card-body">
+    <li *ngFor="let break of breaks">
+      {{getDate(break.from)}} {{monthAbbrevs[getMonth(break.from)-1]}} - {{getDate(break.to)}} {{monthAbbrevs[getMonth(break.to)-1]}}
+      <sup>
+        <i (click)="onDeleteBreak(break._id)" class="fa fa-times text-danger cursor"></i>
+      </sup>
+    </li>
+    <div *ngIf="breaks.length == 0">ไม่มีวันปิดเทอม</div>
+  </div>
+  <div class="card-body" *ngIf="addBreak">
+    <hr>
+    <p>เพิ่มช่วงวันปิดเทอม</p>
+    <div class="form-group">
+      <label>จากวันที่</label>
+      <my-date-picker [placeholder]="placeholder" [options]="myDatePickerOptions"
+        (dateChanged)="onDateFromChanged($event)" required>
+      </my-date-picker>
+    </div>
+    <div class="form-group">
+      <label>ถึงวันที่</label>
+      <my-date-picker [placeholder]="placeholder" [options]="myDatePickerOptions"
+        (dateChanged)="onDateToChanged($event)" required>
+      </my-date-picker>
+    </div>
+    <div class="form-group text-right">
+      <button [disabled]="!from || !to" (click)="onAddBreak(f)" class="btn btn-primary">เพิ่ม</button>
+    </div>
+    <span class="invalid-feedback" *ngIf="errorMessage4">
+      *{{errorMessage4}}
+    </span>
+    <span class="valid-feedback text-success" *ngIf="successMessage">
+      {{successMessage}}
+    </span>
+  </div>
+</div>

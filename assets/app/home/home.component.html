@@ -1,0 +1,86 @@
+<h3>A.BIG Bunchee</h3>
+<div class="my-4">
+  <div class="d-flex justify-content-between">
+    <h6 class="font-weight-bold my-3">สรุปเดือน {{months[month]}} {{year}} </h6>
+    <div class="form-group d-flex">
+      <select (change)="requestEmployees()" class="form-control" [(ngModel)]="month">
+        <option *ngFor="let number of [0,1,2,3,4,5,6,7,8,9,10,11]" value="{{number}}">{{months[number]}}</option>
+      </select>
+      <select (change)="requestEmployees()" class="form-control" [(ngModel)]="year">
+        <option *ngFor="let number of [0,1,2,3,4]" value="{{getYear(number)}}">{{getYear(number)}}</option>
+      </select>
+    </div>
+  </div>
+  <table class="table my-4 text-center">
+    <thead class="thead">
+      <tr>
+        <th rowspan>#</th>
+        <td>ชื่อ</td>
+        <td>สกุล</td>
+        <td>ชื่อเล่น</td>
+        <td>code</td>
+        <td>สถานะ</td>
+        <td>สาขา</td>
+        <td>ตารางงาน</td>
+        <td>ตรวจเช็ค</td>
+      </tr>
+    </thead>
+    <tr style="cursor:pointer" routerLink="/employees/{{employee._id}}" [queryParams]="{month: month, year: year}" *ngFor="let employee of employees; let i = index">
+      <td>{{i+1}}</td>
+      <td>{{employee.firstname}}</td>
+      <td>{{employee.lastname}}</td>
+      <td>{{employee.alias}}</td>
+      <td>{{employee.code}}</td>
+      <td>{{statusArray[employee.status]}}</td>
+      <td>{{branchArray[employee.branch]}}</td>
+      <td>{{employee.schedule.title}}</td>
+      <td><i class="fa {{employee.monthlyReports.length !== 0? 'fa-check text-success':'fa-times text-danger'}}"></i></td>
+    </tr>
+    <tr *ngIf="toAddEmployee">
+      <td>-</td>
+      <td><input style="width: 120px" class="form-control" placeholder="ชื่อ" type="text" name="fistname" [(ngModel)]="newEmployee.firstname" autocomplete="off"></td>
+      <td><input style="width: 120px" class="form-control" placeholder="สกุล" type="text" name="lastname" [(ngModel)]="newEmployee.lastname" autocomplete="off"></td>
+      <td><input style="width: 60px" class="form-control" placeholder="ชื่อเล่น" type="text" name="alias" [(ngModel)]="newEmployee.alias" autocomplete="off"></td>
+      <td><input style="width: 60px" class="form-control" placeholder="รหัส" type="text" name="code" [(ngModel)]="newEmployee.code" autocomplete="off"></td>
+      <td>
+        <select class="form-control" name="status" [(ngModel)]="newEmployee.status">
+          <option *ngFor="let status of statusArray; let i = index" value="{{i}}">{{status}}</option>
+        </select>
+      </td>
+      <td>
+        <select class="form-control" name="branch" [(ngModel)]="newEmployee.branch">
+          <option *ngFor="let branch of branchArray; let i = index" value="{{i}}">{{branch}}</option>
+        </select>
+      </td>
+      <td>
+        <select class="form-control" name="schedule" [(ngModel)]="newEmployee.schedule">
+          <option value="0">เลือกตารางงาน</option>
+          <option *ngFor="let schedule of schedules" value="{{schedule._id}}">{{schedule.title}}</option>
+        </select>
+      </td>
+      <td><button class="btn btn-info" (click)="addEmployee()" [disabled]="invalidAdd()">เพิ่ม</button></td>
+    </tr>
+  </table>
+  <div class="text-right">
+    <button (click)="toAddEmployee = !toAddEmployee; getSchedules()" class="btn btn-sm btn-primary">พนักงาน+</button>
+    <button (click)="onGetExcel()" class="btn btn-sm btn-primary">Excel</button>
+  </div>
+</div>
+<h6 class="font-weight-bold">อัพโหลดไฟลบัญชี</h6>
+<!-- ระบุวันที่ -->
+<div class="form-group">
+  <div class="d-flex justify-content-between my-2">
+    <input type="file" name="excel" class="form-control-file" (change)="updateFile($event, file)" #fileUpload ngModel>
+    <div>
+      <i *ngIf="loading" class="fa fa-spin fa-spinner fa-fw"></i>
+      <button *ngIf="file" [disabled]="disabled" (click)="onReset()" class="btn btn-sm btn-danger">Reset</button>
+      <button *ngIf="file" [disabled]="disabled" (click)="onUpload()" class="btn btn-sm btn-warning">Upload</button>
+    </div>
+  </div>
+  <span class="invalid-feedback" [hidden]="!errorMessage4">
+    *{{errorMessage4}}
+  </span>
+  <span class="valid-feedback text-success" [hidden]="!successMessage">
+    {{successMessage}}
+  </span>
+</div>

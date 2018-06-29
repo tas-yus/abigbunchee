@@ -1,0 +1,158 @@
+<div class="d-flex justify-content-between">
+  <h4>Schedules (ตารางทำงาน)</h4>
+  <button class="btn btn-primary" (click)="addSchedule = !addSchedule">เพิ่ม <i class="fa fa-plus"></i></button>
+</div>
+<div *ngIf="addSchedule">
+  <div class="my-5">
+    <div class="form-group">
+      <input type="text" class="form-control" name="title" placeholder="ชื่อตารางงาน" [(ngModel)]="title" autocomplete="off">
+    </div>
+    <table class="table my-2 text-center">
+      <thead>
+        <tr class="font-weight-bold">
+          <td></td>
+          <td colspan="4">วันธรรมดา</td>
+          <td colspan="4">ปิดเทอม</td>
+        </tr>
+      </thead>
+      <tr>
+        <td></td>
+        <td colspan="2">เข้า</td>
+        <td colspan="2">ออก</td>
+        <td colspan="2">เข้า</td>
+        <td colspan="2">ออก</td>
+      </tr>
+      <tr *ngFor="let day of dayArray">
+        <td class="{{dayStyleArray[day]}}">{{dayStringArray[day]}}</td>
+        <td>
+          ชั่วโมง: <input type="number" class="form-control" name="a" [(ngModel)]="newSchedule.usual[day].in.hour">
+        </td>
+        <td>
+          นาที: <input type="number" class="form-control" name="a" [(ngModel)]="newSchedule.usual[day].in.minute">
+        </td>
+        <td>
+          ชั่วโมง: <input type="number" class="form-control" name="a" [(ngModel)]="newSchedule.usual[day].out.hour">
+        </td>
+        <td>
+          นาที: <input type="number" class="form-control" name="a" [(ngModel)]="newSchedule.usual[day].out.minute">
+        </td>
+        <td>
+          ชั่วโมง: <input type="number" class="form-control" name="a" [(ngModel)]="newSchedule.break[day].in.hour">
+        </td>
+        <td>
+          นาที: <input type="number" class="form-control" name="a" [(ngModel)]="newSchedule.break[day].in.minute">
+        </td>
+        <td>
+          ชั่วโมง: <input type="number" class="form-control" name="a" [(ngModel)]="newSchedule.break[day].out.hour">
+        </td>
+        <td>
+          นาที: <input type="number" class="form-control" name="a" [(ngModel)]="newSchedule.break[day].out.minute">
+        </td>
+      </tr>
+    </table>
+    <div class="text-right">
+      <button class="btn btn-primary" (click)="onAddSchedule()">เพิ่ม</button>
+    </div>
+  </div>
+</div>
+<div *ngIf="!addSchedule">
+  <div class="my-5" *ngFor="let schedule of schedules; let i = index">
+    <div class="d-flex justify-content-between">
+      <p class="font-weight-bold">{{i+1}}: {{schedule.title}}</p>
+      <p *ngIf="!editSchedule[i]" class="text-primary cursor" (click)="editSchedule[i] = !editSchedule[i]">แก้ไข</p>
+      <p *ngIf="editSchedule[i]" class="text-primary cursor" (click)="editSchedule[i] = !editSchedule[i]; fixBreak = []; fixUsual = []">กลับ</p>
+    </div>
+    <table class="table my-2 text-center" *ngIf="!editSchedule[i]">
+      <thead class="thead">
+        <tr class="font-weight-bold">
+          <th></th>
+          <td class="monday">จันทร์</td>
+          <td class="tuesday">อังคาร</td>
+          <td class="wednesday">พุธ</td>
+          <td class="thursday">พฤหัส</td>
+          <td class="friday">ศุกร์</td>
+          <td class="saturday">เสาร์</td>
+          <td class="sunday">อาทิตย์</td>
+          <td class="holiday">นขัตฤกษ์</td>
+        </tr>
+      </thead>
+      <tr>
+        <td>ธรรมดา</td>
+        <td *ngFor="let day of dayArray">
+          <span *ngIf="!dayOff(schedule.usual[day])">{{showReadableDate(schedule.usual[day].in)}}
+            ถึง {{showReadableDate(schedule.usual[day].out)}}
+          </span>
+          <span *ngIf="dayOff(schedule.usual[day])">วันหยุด</span>
+        </td>
+      </tr>
+      <tr>
+        <td>ปิดเทอม</td>
+        <td *ngFor="let day of dayArray">
+          <span *ngIf="!dayOff(schedule.break[day])">{{showReadableDate(schedule.break[day].in)}}
+            ถึง {{showReadableDate(schedule.break[day].out)}}
+          </span>
+          <span *ngIf="dayOff(schedule.break[day])">วันหยุด</span>
+        </td>
+      </tr>
+    </table>
+
+    <div *ngIf="editSchedule[i]">
+      <table class="table my-2 text-center">
+        <thead>
+          <tr class="font-weight-bold">
+            <td></td>
+            <td colspan="4">วันธรรมดา</td>
+            <td colspan="4">ปิดเทอม</td>
+          </tr>
+        </thead>
+        <tr>
+          <td></td>
+          <td colspan="2">เข้า</td>
+          <td colspan="2">ออก</td>
+          <td colspan="2">เข้า</td>
+          <td colspan="2">ออก</td>
+        </tr>
+        <tr *ngFor="let day of dayArray">
+          <td class="{{dayStyleArray[day]}}">{{dayStringArray[day]}}</td>
+          <ng-template [ngIf]="!dayOff(getSchedule(ngSchedules, schedule._id).usual[day]) || fixUsual[day]">
+            <td>
+              ชั่วโมง: <input type="number" class="form-control" name="a" [(ngModel)]="getSchedule(ngSchedules, schedule._id).usual[day].in.hour">
+            </td>
+            <td>
+              นาที: <input type="number" class="form-control" name="a" [(ngModel)]="getSchedule(ngSchedules, schedule._id).usual[day].in.minute">
+            </td>
+            <td>
+              ชั่วโมง: <input type="number" class="form-control" name="a" [(ngModel)]="getSchedule(ngSchedules, schedule._id).usual[day].out.hour">
+            </td>
+            <td>
+              นาที: <input type="number" class="form-control" name="a" [(ngModel)]="getSchedule(ngSchedules, schedule._id).usual[day].out.minute">
+            </td>
+          </ng-template>
+          <ng-template [ngIf]="dayOff(getSchedule(ngSchedules, schedule._id).usual[day]) && !fixUsual[day]">
+            <td colspan="4" class="text-danger" (click)="fixUsual[day] = true">วันหยุด</td>
+          </ng-template>
+          <ng-template [ngIf]="!dayOff(getSchedule(ngSchedules, schedule._id).break[day]) || fixBreak[day]">
+            <td>
+              ชั่วโมง: <input type="number" class="form-control" name="a" [(ngModel)]="getSchedule(ngSchedules, schedule._id).break[day].in.hour">
+            </td>
+            <td>
+              นาที: <input type="number" class="form-control" name="a" [(ngModel)]="getSchedule(ngSchedules, schedule._id).break[day].in.minute">
+            </td>
+            <td>
+              ชั่วโมง: <input type="number" class="form-control" name="a" [(ngModel)]="getSchedule(ngSchedules, schedule._id).break[day].out.hour">
+            </td>
+            <td>
+              นาที: <input type="number" class="form-control" name="a" [(ngModel)]="getSchedule(ngSchedules, schedule._id).break[day].out.minute">
+            </td>
+          </ng-template>
+          <ng-template [ngIf]="dayOff(getSchedule(ngSchedules, schedule._id).break[day]) && !fixBreak[day]">
+            <td colspan="4" class="text-danger" (click)="fixBreak[day] = true">วันหยุด</td>
+          </ng-template>
+        </tr>
+      </table>
+      <div class="text-right">
+        <button class="btn btn-primary" (click)="onEditSchedule(schedule._id)">แก้ไข</button>
+      </div>
+    </div>
+  </div>
+</div>

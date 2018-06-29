@@ -1,0 +1,34 @@
+.form {
+  width: 75%;
+  min-width: 300px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.invalid-feedback {
+  display: block;
+}
+
+.valid-feedback {
+  display: block;
+}
+
+.text-affair {
+  color: #5133A5;
+}
+
+.text-vacation {
+  color: #E88DB1;
+}
+
+.text-pregnant {
+  color: #9A30AE;
+}
+
+.text-sick {
+  color: #F27F33;
+}
+
+.cursor {
+  cursor: pointer;
+}

@@ -1,0 +1,287 @@
+<div *ngIf="employee">
+  <div class="d-flex justify-content-between">
+    <h4>{{employee.firstname}} {{employee.lastname}} ({{employee.alias}})
+      <i *ngIf="loading" class="fa fa-spin fa-spinner fa-fw pl-2"></i>
+    </h4>
+  </div>
+  <div class="container">
+    <div class="mt-4">
+      <div class="d-flex justify-content-between">
+        <h6><span class="font-weight-bold">สถานะ: </span>{{statusArray[employee.status]}}</h6>
+        <div class="cursor text-primary" (click)="toEditEmployee = !toEditEmployee">แก้ไข</div>
+      </div>
+      <h6><span class="font-weight-bold">รหัส: </span>{{employee.code}}</h6>
+      <h6><span class="font-weight-bold">สาขา: </span>{{branchArray[employee.branch]}}</h6>
+      <h6><span class="font-weight-bold">เงินเดือน: </span>{{employee.salary}} บาท</h6>
+      <div class="my-3" *ngIf="toEditEmployee">
+        <div class="form-group">
+          <input type="text" placeholder="ชื่อ" name="firstname" class="form-control" [(ngModel)]="ngEmployee.firstname">
+        </div>
+        <div class="form-group">
+          <input type="text" placeholder="สกุล" name="lastname" class="form-control" [(ngModel)]="ngEmployee.lastname">
+        </div>
+        <div class="form-group">
+          <input type="text" placeholder="ชื่อเล่น" name="alias" class="form-control" [(ngModel)]="ngEmployee.alias">
+        </div>
+        <div class="form-group">
+          <input type="text" placeholder="รหัส" name="code" class="form-control" [(ngModel)]="ngEmployee.code">
+        </div>
+        <div class="form-group">
+          <input type="number" placeholder="เงินเดือน" name="salary" class="form-control" [(ngModel)]="ngEmployee.salary">
+        </div>
+        <div class="form-group">
+          <select class="form-control" name="status" [(ngModel)]="ngEmployee.status">
+            <option *ngFor="let status of statusArray; let i = index" value="{{i}}">{{status}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <select class="form-control" name="branch" [(ngModel)]="ngEmployee.branch">
+            <option *ngFor="let branch of branchArray; let i = index" value="{{i}}">{{branch}}</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="employee.status != 0">
+          <select class="form-control" name="branch" [(ngModel)]="ngEmployee.weekDayOff">
+            <option *ngFor="let day of dayStringArray2; let i = index" value="{{i}}">{{day}}</option>
+          </select>
+        </div>
+        <div class="text-right">
+          <button class="btn btn-primary" (click)="onEditEmployee()" [disabled]="invalidEdit()">Edit</button>
+        </div>
+      </div>
+    </div>
+    <div class="my-5">
+      <div class="d-flex justify-content-between">
+        <p class="font-weight-bold">ตารางงาน ({{employee.schedule.title}})</p>
+        <p *ngIf="!editSchedule" class="text-primary cursor" (click)="editSchedule = !editSchedule">แก้ไข</p>
+        <p *ngIf="editSchedule" class="text-primary cursor" (click)="editSchedule = !editSchedule; ngSchedule = employee.schedule; fixUsual = []; fixBreak = []">กลับ</p>
+      </div>
+      <table class="table my-2 text-center" *ngIf="!editSchedule">
+        <thead class="thead">
+          <tr class="font-weight-bold">
+            <th></th>
+            <td class="monday">จันทร์</td>
+            <td class="tuesday">อังคาร</td>
+            <td class="wednesday">พุธ</td>
+            <td class="thursday">พฤหัส</td>
+            <td class="friday">ศุกร์</td>
+            <td class="saturday">เสาร์</td>
+            <td class="sunday">อาทิตย์</td>
+            <td class="holiday">นขัตฤกษ์</td>
+          </tr>
+        </thead>
+        <tr>
+          <td>ธรรมดา</td>
+          <td *ngFor="let day of dayArray" class="{{hoveredDay && hoveredDay.day == day && !hoveredDay.break? 'border border-primary': ''}}">
+            <span *ngIf="!dayOff(employee.schedule.usual[day])">{{showReadableDate(employee.schedule.usual[day].in)}}
+              ถึง {{showReadableDate(employee.schedule.usual[day].out)}}
+            </span>
+            <span *ngIf="dayOff(employee.schedule.usual[day])">วันหยุด</span>
+          </td>
+        </tr>
+        <tr>
+          <td>ปิดเทอม</td>
+          <td *ngFor="let day of dayArray" class="{{hoveredDay && hoveredDay.day == day && hoveredDay.break? 'border border-primary': ''}}">
+            <span *ngIf="!dayOff(employee.schedule.break[day]) && employee.weekDayOff != day">{{showReadableDate(employee.schedule.break[day].in)}}
+              ถึง {{showReadableDate(employee.schedule.break[day].out)}}
+            </span>
+            <span *ngIf="dayOff(employee.schedule.break[day]) || employee.weekDayOff == day">วันหยุด</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div *ngIf="editSchedule" class="form-group">
+      <select name="type" [(ngModel)]="scheduleId" class="form-control">
+        <option *ngFor="let schedule of schedules" value="{{schedule._id}}">{{schedule.title}}</option>
+      </select>
+      <div class="text-right my-3">
+        <button class="btn btn-primary" (click)="onEditSchedule()">ตกลง</button>
+      </div>
+    </div>
+    <div *ngIf="!editSchedule">
+      <div class="my-5">
+        <div class="d-flex justify-content-between">
+          <p class="font-weight-bold">ข้อมูลการเข้างาน:</p>
+          <div class="form-group d-flex">
+            <select (change)="requestEmployee()" class="form-control" [(ngModel)]="month">
+              <option *ngFor="let number of [0,1,2,3,4,5,6,7,8,9,10,11]" value="{{number}}">{{months[number]}}</option>
+            </select>
+            <select (change)="requestEmployee()" class="form-control" [(ngModel)]="year">
+              <option *ngFor="let number of [0,1,2,3,4]" value="{{getYear(number)}}">{{getYear(number)}}</option>
+            </select>
+          </div>
+        </div>
+        <div *ngIf="employee.reports.length == 0">ยังไม่มี report ในระบบในช่วงเวลาที่กำหนด</div>
+        <table class="table my-2 text-center" *ngIf="employee.reports.length !== 0">
+          <thead class="thead">
+            <tr>
+              <th>#</th>
+              <td>วัน</td>
+              <td>ช่วง</td>
+              <td>วันที่</td>
+              <td>เวลาเข้า</td>
+              <td>เวลาออก</td>
+              <td>สถานะ</td>
+              <td>รูปแบบ</td>
+              <td>หมายเหตุ</td>
+            </tr>
+          </thead>
+          <tr class="noselect" *ngFor="let report of employee.reports; let i = index">
+            <td class="font-weight-bold"><a style="text-decoration: none" routerLink="/reports/{{report._id}}">{{i + 1}}</a></td>
+            <td class="{{dayStyleArray[getDay(report.date)]}} cursor" (click)="onHover(report.date, report.isHoliday, report.isBreak)">{{dayStringArray[getDay(report.date)]}}</td>
+            <td>{{report.isBreak? 'ปิดเทอม': 'เปิดเทอม'}} <sup *ngIf="report.isHoliday">นักขัต</sup></td>
+            <td>{{getDate(report.date)}}</td>
+            <td>{{getTime(report.checkIn)}}</td>
+            <td>{{getTime(report.checkOut)}}</td>
+            <td *ngIf="!report.absent" class="{{report.lateStatus != 0? 'text-sick': ''}} cursor" (click)="onToggleLate(report._id)">{{lateArray[report.lateStatus]}}</td>
+            <ng-template [ngIf]="report.absent">
+              <td *ngIf="report.absentStatus == 0">ลากิจ <sup *ngIf="report.absentDays == 0.5">0.5</sup></td>
+              <td *ngIf="report.absentStatus == 1">ป่วย <sup *ngIf="report.absentDays == 0.5">0.5</sup></td>
+              <td *ngIf="report.absentStatus == 2">วันหยุด <sup *ngIf="report.absentDays == 0.5">0.5</sup></td>
+              <td *ngIf="report.absentStatus == 3">ลาพักร้อน <sup *ngIf="report.absentDays == 0.5">0.5</sup></td>
+              <td *ngIf="report.absentStatus == 4">ท้อง <sup *ngIf="report.absentDays == 0.5">0.5</sup></td>
+              <td *ngIf="report.absentStatus == 5">ขาด <sup *ngIf="report.absentDays == 0.5">0.5</sup></td>
+            </ng-template>
+            <td>
+              <ng-template [ngIf]="!report.absent">
+                <span *ngIf="!report.onHoliday && !report.onDayOff" class="bg-success text-success">___</span>
+                <span *ngIf="report.onHoliday" (click)="removeSpecial(report._id, 1)" class="bg-warning text-warning cursor">___</span>
+                <span *ngIf="report.onHoliday" class="text-warning">x2</span>
+                <span *ngIf="report.onDayOff" (click)="removeSpecial(report._id, 2)" class="bg-info text-info cursor">___</span>
+                <span *ngIf="report.onDayOff" class="text-info">x2</span>
+              </ng-template>
+              <ng-template [ngIf]="report.absent">
+                <span *ngIf="report.absentStatus == 0" (click)="showEdit[i] = !showEdit[i]; showEditStatus[i] = 'affair' " class="bg-affair text-affair cursor">___</span>
+                <span *ngIf="report.absentStatus == 1" (click)="showEdit[i] = !showEdit[i]; showEditStatus[i] = 'sick' " class="bg-sick text-sick cursor">___</span>
+                <span *ngIf="report.absentStatus == 2" (click)="showEdit[i] = !showEdit[i]; showEditStatus[i] = 'excused' " class="bg-primary text-primary cursor">___</span>
+                <span *ngIf="report.absentStatus == 3" (click)="showEdit[i] = !showEdit[i]; showEditStatus[i] = 'vacation' " class="bg-vacation text-vacation cursor">___</span>
+                <span *ngIf="report.absentStatus == 4" (click)="showEdit[i] = !showEdit[i]; showEditStatus[i] = 'pregnant' " class="bg-pregnant text-pregnant cursor">___</span>
+                <span *ngIf="report.absentStatus == 5" (click)="showEdit[i] = !showEdit[i]; showEditStatus[i] = 'absent' " class="bg-danger text-danger cursor">___</span>
+              </ng-template>
+              <form #f=ngForm *ngIf="showEdit[i]">
+                <div class="form-group" *ngIf="showEditStatus[i]">
+                  <div>
+                    <span (click)="updateAbsent(report._id, 0)" class="text-affair cursor {{showEditStatus[i] == 'affair'? 'underline': '' }}">ลากิจ</span>
+                    <span (click)="updateAbsent(report._id, 1)" class="text-sick cursor {{showEditStatus[i] == 'sick'? 'underline': '' }}">ป่วย</span>
+                    <span (click)="updateAbsent(report._id, 2)" class="text-primary cursor {{showEditStatus[i] == 'excused'? 'underline': '' }}">วันหยุด</span>
+                    <span (click)="updateAbsent(report._id, 3)" class="text-vacation cursor {{showEditStatus[i] == 'vacation'? 'underline': '' }}">พักร้อน</span>
+                  </div>
+                  <div>
+                    <span (click)="updateAbsent(report._id, 4)" class="text-pregnant cursor {{showEditStatus[i] == 'pregnant'? 'underline': '' }}">ท้อง</span>
+                    <span (click)="updateAbsent(report._id, 5)" class="text-danger cursor {{showEditStatus[i] == 'absent'? 'underline': ''}}">ขาด</span>
+                    <span (click)="updateAbsent(report._id, 6)" class="text-success cursor">ไม่ขาด</span>
+                  </div>
+                </div>
+              </form>
+            </td>
+            <td>
+              {{report.comment}}
+              <!-- <ng-template [ngIf]="!report.ot">{{report.otDetected? 'OT ':'-'}} {{showOTHours[i]? '(ชั่วโมง)' : ''}}</ng-template> -->
+              <ng-template [ngIf]="report.ot">OT {{report.otHours}} ชั่วโมง</ng-template>
+              <ng-template [ngIf]="report.otDetected">
+                <i (click)="showOTHours[i] = !showOTHours[i]" *ngIf="!showOTHours[i]" class="fa fa-check text-success"></i>
+                <form #f=ngForm *ngIf="showOTHours[i]">
+                  <input type="number" name="otHours" style="width: 50px" [(ngModel)]="report.otHours">
+                  <button class="btn btn-sm btn-primary" (click)="approveOT(report._id, report.otHours)" [disabled]="!report.otHours">ตกลง</button>
+                </form>
+                <i (click)="dismissOT(report._id)" *ngIf="!showOTHours[i]" class="fa fa-times text-danger"></i>
+              </ng-template>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="my-4" *ngIf="employee.reports.length != 0" >
+        <div class="d-flex justify-content-between">
+          <p class="font-weight-bold">สรุป</p>
+          <!-- <p class="cursor text-success" *ngIf="!checked">อนุมัติ</p> -->
+          <div>
+            <p>ตรวจสอบแล้ว: <i class="fa {{checked? 'fa-check text-success': 'fa-times text-danger'}}"></i>
+              <ng-template [ngIf]="!checked">
+                |
+                <button class="btn btn-sm btn-primary" (click)="approve()">
+                  อนุมัติ
+                </button>
+              </ng-template>
+            </p>
+          </div>
+        </div>
+        <span class="invalid-feedback" *ngIf="errorMessage2">
+            *{{errorMessage2}}
+        </span>
+        <table class="table my-2 text-center">
+          <thead class="thead">
+            <tr>
+              <th>จำนวนวัน</th>
+              <td>กิจ</td>
+              <td>ป่วย</td>
+              <td>พักร้อน</td>
+              <td>ขาด</td>
+              <td>1 นาที</td>
+              <td>6 นาที</td>
+              <td>11 นาที</td>
+              <td>OT</td>
+              <!-- <td>วันหยุด</td> -->
+              <td>นักขัต</td>
+              <td>อื่นๆ</td>
+              <td>หัก</td>
+              <td>ภาษี</td>
+              <td *ngIf="month == 11">โบนัส</td>
+              <td *ngIf="month == 11">คืนพักร้อน</td>
+            </tr>
+          </thead>
+          <tr>
+            <td>{{employee.reports.length}}</td>
+            <td>{{result.numAffair}}</td>
+            <td>{{result.numSick}}</td>
+            <td>{{result.numVacation}}</td>
+            <td>{{result.numAbsent}}</td>
+            <td>{{result.numLate1}}</td>
+            <td>{{result.numLate2}}</td>
+            <td>{{result.numLate3}}</td>
+            <td>{{result.numOT}}</td>
+            <!-- <td>{{result.numDayOff}}</td> -->
+            <td>{{result.numHoliday}}</td>
+            <ng-template [ngIf]="!employee.monthlyReports[0]">
+              <td>
+                <input type="number" class="num" [(ngModel)]="result.others">
+              </td>
+              <td>
+                <input type="number" class="num" [(ngModel)]="result.offset">
+              </td>
+              <td>
+                <input type="number" class="num" [(ngModel)]="result.tax">
+              </td>
+              <td *ngIf="(month == 11 || month == 7)">
+                <input type="number" class="num" [(ngModel)]="result.bonus">
+              </td>
+              <td *ngIf="(month == 11 || month == 7)">
+                <input type="number" class="num" [(ngModel)]="result.returnVacation">
+              </td>
+            </ng-template>
+            <ng-template [ngIf]="employee.monthlyReports[0]">
+              <td *ngIf="employee.monthlyReports[0].checked">{{result.others}}</td>
+              <td *ngIf="!employee.monthlyReports[0].checked">
+                <input type="number" class="num" [(ngModel)]="result.others">
+              </td>
+              <td *ngIf="employee.monthlyReports[0].checked">{{result.offset}}</td>
+              <td *ngIf="!employee.monthlyReports[0].checked">
+                <input type="number" class="num" [(ngModel)]="result.offset">
+              </td>
+              <td *ngIf="employee.monthlyReports[0].checked">{{result.tax}}</td>
+              <td *ngIf="!employee.monthlyReports[0].checked">
+                <input type="number" class="num" [(ngModel)]="result.tax">
+              </td>
+              <td *ngIf="employee.monthlyReports[0].checked && (month == 11 || month == 7)">{{result.bonus}}</td>
+              <td *ngIf="!employee.monthlyReports[0].checked && (month == 11 || month == 7)">
+                <input type="number" class="num" [(ngModel)]="result.bonus">
+              </td>
+              <td *ngIf="employee.monthlyReports[0].checked && (month == 11 || month == 7)">{{result.returnVacation}}</td>
+              <td *ngIf="!employee.monthlyReports[0].checked && (month == 11 || month == 7)">
+                <input type="number" class="num" [(ngModel)]="result.returnVacation">
+              </td>
+            </ng-template>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

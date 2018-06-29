@@ -1,0 +1,66 @@
+.form {
+  width: 90%;
+  min-width: 300px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.invalid-feedback {
+  display: block;
+}
+
+.valid-feedback {
+  display: block;
+}
+
+.bg-sick {
+  background-color: #F27F33;
+}
+
+.text-sick {
+  color: #F27F33;
+}
+
+.cursor {
+  cursor: pointer;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.monday {
+  color: #F3B656;
+}
+
+.tuesday {
+  color: #FC3768;
+}
+
+.wednesday {
+  color: #1FCA23;
+}
+
+.thursday {
+  color: #FC6521;
+}
+
+.friday {
+  color: #146AFB;
+}
+
+.saturday {
+  color: #651CCB;
+}
+
+.sunday {
+  color: #FB0D1B;
+}
+
+.holiday {
+  color: #545E5F;
+}
+
+.cursor {
+  cursor: pointer;
+}

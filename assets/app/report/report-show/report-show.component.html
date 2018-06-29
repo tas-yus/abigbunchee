@@ -1,0 +1,83 @@
+<div class="form my-2">
+  <h4>Report</h4>
+  <div *ngIf="report" class="py-2">
+    <p><span class="font-weight-bold">ชื่อ-สกุล: </span><a routerLink="/employees/{{report.employee._id}}">
+      {{report.employee.firstname}} {{report.employee.lastname}}
+    </a></p>
+    <p><span class="font-weight-bold">วันที่ (วัน-เดือน-ปี):</span> {{getDate(report.date)}}</p>
+    <div class="d-flex justify-content-between">
+      <p><span class="font-weight-bold">ช่วง:</span> {{report.isBreak? 'ปิดเทอม':'เปิดเทอม'}}<sup *ngIf="report.isHoliday">นักขัต</sup></p>
+      <div class="d-flex justify-content-between">
+        <p class="cursor text-primary" *ngIf="report.isHoliday && !report.onHoliday" (click)="toggleOnHoliday()">x2 นักขัต </p>
+        <p class="cursor text-primary pl-2" *ngIf="report.isDayOff && !report.onDayOff" (click)="toggleOnDayOff()">x2 วันหยุด</p>
+      </div>
+    </div>
+    <p><span class="font-weight-bold">เข้างาน:</span> {{report.checkIn? getTime(report.checkIn):'-'}}</p>
+    <p><span class="font-weight-bold">ออกงาน:</span> {{report.checkOut? getTime(report.checkOut): '-'}}</p>
+    <div class="d-flex justify-content-between my-3">
+      <div>
+        <span class="font-weight-bold">สถานะ:</span>
+        <span class="{{report.lateStatus == 0? 'text-success': 'text-danger'}} cursor" (click)="onToggleLate()" *ngIf="!report.absent">{{lateArray[report.lateStatus]}}</span>
+        <span (click)="chooseHalf(report.absentDays)" class="cursor {{absentStyleArray[report.absentStatus]}}" *ngIf="report.absent">
+          {{absentArray[report.absentStatus]}} {{report.absentDays}} วัน
+        </span>
+      </div>
+      <span (click)="forceAbsent()"*ngIf="!report.absent && !report.checkIn && !report.checkOut" class="text-primary cursor">เช็คขาด</span>
+      <i class="fa fa-wrench text-primary cursor" (click)="showEdit = !showEdit" *ngIf="report.absent"></i>
+    </div>
+    <form #f=ngForm *ngIf="showEdit">
+      <div class="form-group">
+        <span (click)="updateAbsent(0)" class="text-affair cursor">ลากิจ</span>
+        <span (click)="updateAbsent(1)" class="text-sick cursor">ป่วย</span>
+        <span (click)="updateAbsent(2)" class="text-primary cursor">วันหยุด</span>
+        <span (click)="updateAbsent(3)" class="text-vacation cursor">พักร้อน</span>
+        <span (click)="updateAbsent(4)" class="text-pregnant cursor">ท้อง</span>
+        <span (click)="updateAbsent(5)" class="text-danger cursor">ขาด</span>
+        <span (click)="updateAbsent(6)" class="text-success cursor">ไม่ขาด</span>
+      </div>
+    </form>
+    <ng-template [ngIf]="!report.absent">
+      <p *ngIf="report.onHoliday"><span class="font-weight-bold">หมายเหตุ: </span> <span class="bg-warning text-warning cursor" (click)="removeSpecial(1)">___</span> ทำงานนักขัต</p>
+      <p *ngIf="report.onDayOff"><span class="font-weight-bold">หมายเหตุ: </span><span class="bg-info text-info cursor" (click)="removeSpecial(2)">___</span> ทำงานวันหยุด</p>
+      <div class="my-3">
+        <span class="font-weight-bold my-3">OT (ชั่วโมง):</span>
+        <span>
+          {{report.otHours}}
+          <i (click)="showOTHours = !showOTHours" *ngIf="!showOTHours" class="cursor fa fa-wrench text-primary"></i>
+          <form #f=ngForm *ngIf="showOTHours">
+            <div class="form-group">
+              <input type="number" name="otHours" class="form-control" [(ngModel)]="report.otHours">
+            </div>
+            <div class="text-right form-group">
+              <button class="btn btn-sm btn-primary" (click)="approveOT(report.otHours)" [disabled]="report.otHours == null">ตกลง</button>
+            </div>
+          </form>
+        </span>
+        <!-- <ng-template [ngIf]="report.otDetected">
+          <div class="form-group">
+            <i (click)="showOTHours = !showOTHours" *ngIf="!showOTHours" class="fa fa-check text-success"></i>
+            <form #f=ngForm *ngIf="showOTHours">
+              <input type="number" name="otHours" class="form-control "[(ngModel)]="report.otHours">
+              <button class="btn btn-sm btn-primary" (click)="approveOT(report.otHours)" [disabled]="!report.otHours">ตกลง</button>
+            </form>
+          </div>
+          <i (click)="dismissOT()" *ngIf="!showOTHours" class="fa fa-times text-danger"></i>
+        </ng-template> -->
+        <!-- <span *ngIf="!report.ot && !report.otDetected">0</span> -->
+      </div>
+    </ng-template>
+    <div class="d-flex justify-content-between">
+      <p><span class="font-weight-bold">บันทึกช่วยจำ:</span> {{report.comment}}
+        <i (click)="showComment = !showComment" *ngIf="!showComment" class="cursor fa fa-wrench text-primary"></i>
+      </p>
+    </div>
+    <form #f=ngForm *ngIf="showComment">
+      <div class="form-group">
+        <textarea class="form-control" name="name" rows="3" cols="80" [(ngModel)]="report.comment">ช่วยจำ</textarea>
+      </div>
+      <div class="text-right form-group">
+        <button class="btn btn-sm btn-primary" (click)="addComment()">ตกลง</button>
+      </div>
+    </form>
+  </div>
+</div>
